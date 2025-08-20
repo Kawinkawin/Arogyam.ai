@@ -45,15 +45,15 @@ Doctors can:
 ## ScreenShots
 - ![Screenshot showing the app home page](pics/docCHAT.jpg)
 
-- ![Screenshot showing the app home page](pics\home.jpg)
+- ![Screenshot showing the app home page](pics/home.jpg)
 
-- ![Screenshot showing the app home page](pics\main.jpg)
+- ![Screenshot showing the app home page](pics/main.jpg)
 
-- ![Screenshot showing the app home page](pics\miltiMODEL.jpg)
+- ![Screenshot showing the app home page](pics/miltiMODEL.jpg)
 
-- ![nero chat](pics\nero.jpg)
+- ![nero chat](pics/nero.jpg)
 
-- ![Screenshot showing the app home page](pics\patientsignup.jpg)
+- ![Screenshot showing the app home page](pics/patientsignup.jpg)
 
 
 ## 🧰 Tech Stack
