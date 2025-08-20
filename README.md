@@ -44,8 +44,17 @@ Doctors can:
 ---
 ## ScreenShots
 - ![Screenshot showing the app home page](pics/docCHAT.jpg)
-- Feature 2
-- Feature 3
+
+- ![Screenshot showing the app home page](pics\home.jpg)
+
+- ![Screenshot showing the app home page](pics\main.jpg)
+
+- ![Screenshot showing the app home page](pics\miltiMODEL.jpg)
+
+- ![nero chat](pics\nero.jpg)
+
+- ![Screenshot showing the app home page](pics\patientsignup.jpg)
+
 
 ## 🧰 Tech Stack
 
