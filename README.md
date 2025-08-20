@@ -43,7 +43,7 @@ Doctors can:
 
 ---
 ## ScreenShots
-- ![Screenshot showing the app home page](pics\docCHAT.jpg)
+- ![Screenshot showing the app home page](pics/docCHAT.jpg)
 - Feature 2
 - Feature 3
 
