@@ -45,16 +45,34 @@ Doctors can:
 ## ScreenShots
 - ![Screenshot showing the app home page](pics/docCHAT.jpg)
 
+---
+
+
 - ![Screenshot showing the app home page](pics/home.jpg)
+
+---
+
 
 - ![Screenshot showing the app home page](pics/main.jpg)
 
+---
+
+
 - ![Screenshot showing the app home page](pics/miltiMODEL.jpg)
+
+---
 
 - ![nero chat](pics/nero.jpg)
 
+---
+
+
+
 - ![Screenshot showing the app home page](pics/patientsignup.jpg)
 
+---
+
+---
 
 ## 🧰 Tech Stack
 
@@ -67,12 +85,22 @@ Doctors can:
 
 ---
 
+---
+
 
 
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/project-name.git
-cd project-name
-pip install -r requirements.txt
-python main.py
+git clone https://github.com/Kawinkawin/Arogyam.ai.git
+
+
+# Contact
+
+If you have any questions or feedback, feel free to reach out:
+
+| Name            | Email                    | 
+|-----------------|--------------------------|
+| Kawin P         | kawin.p2022ai-ds@sece.ac.in  |  
+| Gokul N         | gokul.n2022ai-ds@sece.ac.in  | 
+| Nishanthan GS   | nishanthan.gs2022ai-ds@sece.ac.in  | 
