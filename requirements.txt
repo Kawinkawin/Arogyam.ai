@@ -1,0 +1,4 @@
+Flask==3.0.3
+request
+flask mysql-connector-python
+werkzeug

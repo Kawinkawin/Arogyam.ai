@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultation with {{ doctor.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat_doctor.css') }}">
+</head>
+<body>
+    <div class="background-gradient"></div>
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    
+    <div class="chat-container">
+        <div class="header-section">
+            <div class="doctor-avatar">
+                <div class="avatar-circle">
+                    <span class="doctor-initial">{{ doctor.name[0] }}</span>
+                </div>
+                <div class="status-indicator"></div>
+            </div>
+            <div class="doctor-info">
+                <h1 class="doctor-name">Dr. {{ doctor.name }}</h1>
+                <h3 class="specialization">{{ doctor.specialization }}</h3>
+                <div class="fee-badge">
+                    <span class="currency">₹</span>
+                    <span class="amount">{{ doctor.fees }}</span>
+                    <span class="label">Consultation Fee</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms & Policy -->
+        <div class="terms-section">
+            <div class="section-header">
+                <h4>Terms & Policies</h4>
+            </div>
+            <div class="terms-content">
+                <p>
+                    By continuing, you agree to our consultation terms and policies. 
+                    You must complete the payment of consultation fees before starting the session.
+                </p>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="agreeTerms">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-text">I agree to the terms and policies</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Payment Section -->
+        <div class="payment-section">
+            <button id="payBtn" class="pay-button">
+                <span class="pay-icon">💳</span>
+                <span>Pay Consultation Fee</span>
+                <div class="button-shine"></div>
+            </button>
+        </div>
+
+        <!-- Communication Options -->
+        <div class="call-options-section">
+            <h4 class="section-title">Choose Communication Method</h4>
+            <div class="call-options">
+                <button class="video-btn call-option-btn">
+                    <div class="btn-icon">📹</div>
+                    <span>Video Call</span>
+                    <div class="btn-glow"></div>
+                </button>
+                <button class="voice-btn call-option-btn">
+                    <div class="btn-icon">🎙️</div>
+                    <span>Voice Call</span>
+                    <div class="btn-glow"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <h4>Live Consultation</h4>
+                <div class="chat-status">
+                    <div class="status-dot"></div>
+                    <span>Active</span>
+                </div>
+            </div>
+            <div class="chat-box">
+                <div class="messages" id="messages">
+                    <div class="message doctor-message">
+                        <div class="message-avatar">Dr</div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                <p>Hello! How can I help you today?</p>
+                            </div>
+                            <div class="message-time">Just now</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" placeholder="Type your message...">
+                        <div class="input-actions">
+                            <button id="translateBtn" class="action-btn translate-btn" title="Translate">
+                                🌐
+                            </button>
+                            <button id="sendBtn" class="action-btn send-btn">
+                                <span>Send</span>
+                                <div class="send-arrow">→</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div class="feedback-section">
+            <div class="section-header">
+                <h4>Rate Your Consultation</h4>
+                <div class="rating-stars">
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                </div>
+            </div>
+            <div class="feedback-content">
+                <textarea class="feedback-textarea" placeholder="Share your experience with this consultation..."></textarea>
+                <div class="rating-container">
+                    <label class="rating-label">Your Rating:</label>
+                    <select class="rating-select">
+                        <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                        <option value="4">⭐⭐⭐⭐ Very Good</option>
+                        <option value="3">⭐⭐⭐ Good</option>
+                        <option value="2">⭐⭐ Fair</option>
+                        <option value="1">⭐ Poor</option>
+                    </select>
+                </div>
+                <button class="submit-feedback">
+                    <span>Submit Feedback</span>
+                    <div class="submit-shine"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
