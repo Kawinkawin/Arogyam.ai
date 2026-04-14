@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Prescriptions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .prescription-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .back-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .order-tracking-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .order-tracking-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .order-tracking-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .header-title p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .patient-info {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .prescriptions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .prescription-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .prescription-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .prescription-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prescription-date {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .prescription-date strong {
+            display: block;
+            font-size: 18px;
+            margin-top: 5px;
+        }
+
+        .doctor-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .prescription-body {
+            padding: 25px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title svg {
+            width: 20px;
+            height: 20px;
+            color: #667eea;
+        }
+
+        .diagnosis-text {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .medicines-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .medicines-table thead {
+            background: #f8f9fa;
+        }
+
+        .medicines-table th {
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .medicines-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .medicines-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .notes-text {
+            background: #fffbf0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ff9800;
+            color: #666;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+        }
+
+        .print-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .print-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .btn-order {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reminder {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .btn-reminder:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-diet {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+        }
+
+        .btn-diet:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(21, 128, 61, 0.35);
+        }
+
+        .care-result {
+            margin-top: 14px;
+            background: #f8fafc;
+            border: 1px solid #dbeafe;
+            border-radius: 10px;
+            padding: 14px;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .care-result h4 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: #1e3a8a;
+        }
+
+        .care-result ul {
+            margin-top: 6px;
+            padding-left: 18px;
+        }
+
+        .care-result li {
+            margin-bottom: 4px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .close-modal:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .pharmacists-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .pharmacist-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .pharmacist-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .pharmacist-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .pharmacist-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .pharmacy-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            padding-right: 30px;
+        }
+
+        .pharmacy-detail {
+            display: flex;
+            align-items: start;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .pharmacy-detail svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .pharmacy-hours {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .btn-modal-cancel {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-modal-cancel:hover {
+            background: #f8f9fa;
+        }
+
+        .btn-modal-confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-modal-confirm:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-modal-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-pharmacists {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .header,
+            .action-buttons {
+                display: none;
+            }
+
+            .prescription-card {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .prescription-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .medicines-table {
+                font-size: 12px;
+            }
+
+            .medicines-table th,
+            .medicines-table td {
+                padding: 8px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .order-tracking-btn {
+                font-size: 0.85rem;
+                padding: 8px 12px;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="prescription-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="window.history.back()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+                    </svg>
+                </button>
+                <div class="header-title">
+                    <h1>My Prescriptions</h1>
+                    <p>From Dr. {{ doctor.name }}</p>
+                </div>
+            </div>
+            <a href="/patient_orders/{{ patient.id }}" class="order-tracking-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <path d="M9 11l3 3L22 4"></path>
+                </svg>
+                <span>Track Orders</span>
+            </a>
+        </div>
+
+        <!-- Patient Info -->
+        <div class="patient-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Patient Name</span>
+                    <span class="info-value">{{ patient.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Age</span>
+                    <span class="info-value">{{ patient.age }} years</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Doctor</span>
+                    <span class="info-value">Dr. {{ doctor.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Specialization</span>
+                    <span class="info-value">{{ doctor.specialization }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prescriptions -->
+        {% if prescriptions %}
+            <div class="prescriptions-list">
+                {% for prescription in prescriptions %}
+                    <div class="prescription-card">
+                        <div class="prescription-header">
+                            <div class="prescription-date">
+                                <span>Date</span>
+                                <strong>{{ prescription.created_date[:10] if prescription.created_date else 'N/A' }}</strong>
+                            </div>
+                            <div class="doctor-badge">
+                                Dr. {{ prescription.doctor_name }} • {{ prescription.specialization }}
+                            </div>
+                        </div>
+
+                        <div class="prescription-body">
+                            <!-- Diagnosis -->
+                            <div class="section">
+                                <div class="section-title">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A3,3 0 0,1 15,9A3,3 0 0,1 12,12A3,3 0 0,1 9,9A3,3 0 0,1 12,6M12,13C12.59,13 13.12,13.06 13.63,13.19C13.36,14.22 13.22,15.31 13.3,16.43C12.88,16.14 12.47,15.78 12.12,15.35C11.55,15.63 11.09,16.09 10.82,16.65C10.35,15.79 10.13,14.76 10.3,13.63C10.81,13.06 11.37,13 12,13M12,3A9,9 0 0,1 21,12C21,16.55 18.08,20.32 14.15,21.25C14.16,21.17 14.16,21.08 14.16,21C14.16,19.64 13.55,18.41 12.59,17.6C13.72,17.08 14.67,16.23 15.21,15.2C16.2,14.42 16.89,13.28 16.89,12C16.89,9.9 15.56,8.13 13.77,7.56C13.25,7.4 12.7,7.31 12.13,7.31C11.13,7.31 10.2,7.62 9.45,8.13C9.16,8 8.85,7.93 8.53,7.93C7.97,7.93 7.47,8.08 7.05,8.34C7,8.23 7,8.11 7,8C7,5.24 9.24,3 12,3Z"/>
+                                    </svg>
+                                    Diagnosis
+                                </div>
+                                <div class="diagnosis-text">{{ prescription.diagnosis }}</div>
+                            </div>
+
+                            <!-- Medicines -->
+                            {% if prescription.medicines %}
+                                <div class="section">
+                                    <div class="section-title">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M15.5,11H12.5V8.5C12.5,8.22 12.27,8 12,8C11.73,8 11.5,8.22 11.5,8.5V11H8.5C8.22,11 8,11.23 8,11.5C8,11.77 8.22,12 8.5,12H11.5V15.5C11.5,15.78 11.73,16 12,16C12.27,16 12.5,15.78 12.5,15.5V12H15.5C15.78,12 16,11.77 16,11.5C16,11.23 15.78,11 15.5,11Z"/>
+                                        </svg>
+                                        Prescribed Medicines
+                                    </div>
+                                    <table class="medicines-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Medicine</th>
+                                                <th>Dosage</th>
+                                                <th>Duration</th>
+                                                <th>Instructions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for medicine in prescription.medicines %}
+                                                <tr>
+                                                    <td><strong>{{ medicine.medicine_name }}</strong></td>
+                                                    <td>{{ medicine.dosage }}</td>
+                                                    <td>{{ medicine.duration }}</td>
+                                                    <td>{{ medicine.instructions or 'N/A' }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+
+                            <!-- Notes -->
+                            {% if prescription.notes %}
+                                <div class="section">
+                                    <div class="section-title">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M7.5,17.5C7.5,18.33 8.17,19 9,19H15C15.83,19 16.5,18.33 16.5,17.5C16.5,16.67 15.83,16 15,16H9C8.17,16 7.5,16.67 7.5,17.5M7.5,13C7.5,13.83 8.17,14.5 9,14.5H15C15.83,14.5 16.5,13.83 16.5,13C16.5,12.17 15.83,11.5 15,11.5H9C8.17,11.5 7.5,12.17 7.5,13Z"/>
+                                        </svg>
+                                        Additional Notes
+                                    </div>
+                                    <div class="notes-text">{{ prescription.notes }}</div>
+                                </div>
+                            {% endif %}
+
+                            <div class="action-buttons">
+                                <button class="btn btn-order" onclick="openOrderModal({{ prescription.id }}, '{{ prescription.doctor_name }}', '{{ prescription.diagnosis }}')">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;">
+                                        <path d="M7,2H17A4,4 0 0,1 21,6V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V4A2,2 0 0,1 5,2M7,4V8H17V4H7M7,10V13H9V10H7M11,10V13H13V10H11M15,10V13H17V10H15M7,15V18H9V15H7M11,15V18H13V15H11M15,15V18H17V15H15Z"/>
+                                    </svg>
+                                    Order Medicines
+                                </button>
+                                <button class="btn btn-reminder" onclick="getReminder({{ prescription.id }})">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;">
+                                        <path d="M12,2A7,7 0 0,1 19,9V12.29L20.71,14A1,1 0 0,1 20,15.71H4A1,1 0 0,1 3.29,14L5,12.29V9A7,7 0 0,1 12,2M12,22A2,2 0 0,0 14,20H10A2,2 0 0,0 12,22Z"/>
+                                    </svg>
+                                    Get Reminder
+                                </button>
+                                <button class="btn btn-diet" onclick="getDietPlan({{ prescription.id }})">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;">
+                                        <path d="M17,8C8,10 5.9,16.8 3,22C5,22 8.5,20.9 11.5,17C13.6,14.3 15,10.7 17,8M20.5,3C17.5,3 15,4 13.5,6C11.5,8.7 10.2,12.5 9,16C12.5,15 16.3,13.5 19,11.5C21,10 22,7.5 22,4.5V3H20.5Z"/>
+                                    </svg>
+                                    Get Diet Plan
+                                </button>
+                                <button class="btn print-btn" onclick="printPrescription({{ loop.index }})">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;">
+                                        <path d="M19,8H5V19H19M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.9 20.1,3 19,3M7,9H17V13H7V9Z"/>
+                                    </svg>
+                                    Print
+                                </button>
+                            </div>
+
+                            <div id="reminderResult-{{ prescription.id }}" class="care-result" style="display:none;"></div>
+                            <div id="dietResult-{{ prescription.id }}" class="care-result" style="display:none;"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="prescription-card">
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    <h2>No Prescriptions Yet</h2>
+                    <p>You don't have any prescriptions from this doctor yet.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        let currentPrescriptionId = null;
+        let selectedPharmacistId = null;
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text ?? '';
+            return div.innerHTML;
+        }
+
+        function renderReminderResult(prescriptionId, payload) {
+            const box = document.getElementById(`reminderResult-${prescriptionId}`);
+            if (!box) return;
+
+            const reminders = payload.reminders || [];
+            const rows = reminders.map((item) => `
+                <li>
+                    <strong>${escapeHtml(item.medicine_name)}</strong> at ${escapeHtml(item.reminder_time)}
+                    (${escapeHtml(item.meal_timing || 'as advised')})
+                </li>
+            `).join('');
+
+            box.innerHTML = `
+                <h4>Medicine Reminders Ready</h4>
+                <p>${escapeHtml(payload.message || 'Your reminders are generated successfully.')}</p>
+                <ul>${rows}</ul>
+            `;
+            box.style.display = 'block';
+        }
+
+        function renderDietPlanResult(prescriptionId, payload) {
+            const box = document.getElementById(`dietResult-${prescriptionId}`);
+            if (!box) return;
+
+            const plan = payload.diet_plan || {};
+            const timingNotes = (plan.timing_notes || []).map((note) => `<li>${escapeHtml(note)}</li>`).join('');
+            const avoidItems = (plan.avoid || []).map((item) => `<li>${escapeHtml(item)}</li>`).join('');
+
+            box.innerHTML = `
+                <h4>Diet Plan Generated</h4>
+                <p>${escapeHtml(plan.summary || 'Use this as your daily meal guide.')}</p>
+                <p><strong>Breakfast:</strong> ${escapeHtml((plan.breakfast || []).join(', '))}</p>
+                <p><strong>Lunch:</strong> ${escapeHtml((plan.lunch || []).join(', '))}</p>
+                <p><strong>Dinner:</strong> ${escapeHtml((plan.dinner || []).join(', '))}</p>
+                ${timingNotes ? `<p><strong>Medicine Timing:</strong></p><ul>${timingNotes}</ul>` : ''}
+                ${avoidItems ? `<p><strong>Avoid:</strong></p><ul>${avoidItems}</ul>` : ''}
+            `;
+            box.style.display = 'block';
+        }
+
+        async function getReminder(prescriptionId) {
+            try {
+                const response = await fetch(`/api/prescription/${prescriptionId}/generate_reminders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                if (result.status !== 'success') {
+                    alert(result.message || 'Unable to generate reminders.');
+                    return;
+                }
+
+                renderReminderResult(prescriptionId, result);
+                alert('Get Reminder completed. Notifications will show on your next login.');
+            } catch (error) {
+                console.error('Reminder generation failed:', error);
+                alert('Failed to generate reminder. Please try again.');
+            }
+        }
+
+        async function getDietPlan(prescriptionId) {
+            try {
+                const response = await fetch(`/api/prescription/${prescriptionId}/diet_plan`);
+                const result = await response.json();
+
+                if (result.status !== 'success') {
+                    alert(result.message || 'Unable to generate diet plan.');
+                    return;
+                }
+
+                renderDietPlanResult(prescriptionId, result);
+            } catch (error) {
+                console.error('Diet plan generation failed:', error);
+                alert('Failed to generate diet plan. Please try again.');
+            }
+        }
+
+        function openOrderModal(prescriptionId, doctorName, diagnosis) {
+            currentPrescriptionId = prescriptionId;
+            selectedPharmacistId = null;
+            document.getElementById('orderModal').classList.add('active');
+            loadPharmacists();
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').classList.remove('active');
+            selectedPharmacistId = null;
+        }
+
+        function loadPharmacists() {
+            const modalBody = document.getElementById('pharmacistsContainer');
+            modalBody.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading pharmacists...</p></div>';
+
+            fetch('/api/get_pharmacists')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.pharmacists && data.pharmacists.length > 0) {
+                        displayPharmacists(data.pharmacists);
+                    } else {
+                        modalBody.innerHTML = '<div class="no-pharmacists"><p>No pharmacists available at the moment.</p></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalBody.innerHTML = '<div class="no-pharmacists"><p>Error loading pharmacists. Please try again.</p></div>';
+                });
+        }
+
+        function displayPharmacists(pharmacists) {
+            const modalBody = document.getElementById('pharmacistsContainer');
+            let html = '<div class="pharmacists-grid">';
+
+            pharmacists.forEach(pharmacist => {
+                const hours = pharmacist.opening_hours_from && pharmacist.opening_hours_to 
+                    ? `${pharmacist.opening_hours_from} - ${pharmacist.opening_hours_to}` 
+                    : 'N/A';
+
+                html += `
+                    <div class="pharmacist-card" onclick="selectPharmacist(${pharmacist.id}, this)">
+                        <div class="pharmacy-name">${pharmacist.pharmacy_name}</div>
+                        <div class="pharmacy-detail">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12.5,7H11V13L16.25,16.15L17,14.92L12.5,12.11V7Z"/></svg>
+                            <span><strong>License:</strong> ${pharmacist.license_number}</span>
+                        </div>
+                        <div class="pharmacy-detail">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22S19,14.25 19,9A7,7 0 0,0 12,2Z"/></svg>
+                            <span><strong>${pharmacist.city}, ${pharmacist.state}</strong></span>
+                        </div>
+                        <div class="pharmacy-detail">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62,10.79C15.84,20.01 20.01,15.84 20.01,15.84L16.56,12.4C16.56,12.4 13.1,13.75 10.79,6.62C10.79,6.62 12.15,3.16 12.4,3.44L13.9,1.94C13.9,1.94 9.4,6.62 6.62,10.79Z"/></svg>
+                            <span><strong>${pharmacist.phone}</strong></span>
+                        </div>
+                        <div class="pharmacy-hours">
+                            <strong>Hours:</strong> ${hours}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            modalBody.innerHTML = html;
+        }
+
+        function selectPharmacist(pharmacistId, element) {
+            // Remove selected from all cards
+            document.querySelectorAll('.pharmacist-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            // Add selected to clicked card
+            element.classList.add('selected');
+            selectedPharmacistId = pharmacistId;
+        }
+
+        function confirmOrder() {
+            if (!selectedPharmacistId) {
+                alert('Please select a pharmacist');
+                return;
+            }
+
+            if (!currentPrescriptionId) {
+                alert('Error: Prescription not found');
+                return;
+            }
+
+            // Submit order
+            fetch('/api/create_order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prescription_id: currentPrescriptionId,
+                    pharmacist_id: selectedPharmacistId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Order placed successfully! The pharmacist will review your prescription soon.');
+                    closeOrderModal();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error placing order. Please try again.');
+            });
+        }
+
+        function printPrescription(index) {
+            const printContent = document.querySelectorAll('.prescription-card')[index - 1].innerHTML;
+            const originalContent = document.body.innerHTML;
+            document.body.innerHTML = '<div class="prescription-card">' + printContent + '</div>';
+            window.print();
+            document.body.innerHTML = originalContent;
+            location.reload();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('orderModal');
+            if (event.target == modal) {
+                closeOrderModal();
+            }
+        }
+    </script>
+
+    <!-- Order Medicines Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Select a Pharmacy</h2>
+                <button class="close-modal" onclick="closeOrderModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="pharmacistsContainer"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" onclick="closeOrderModal()">Cancel</button>
+                <button class="btn-modal-confirm" onclick="confirmOrder()">Place Order</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

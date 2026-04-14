@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Medicine Orders - Arogyam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .header-title i {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0ff;
+            color: #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8ff;
+        }
+
+        .patient-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .info-item i {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        .info-detail {
+            flex: 1;
+        }
+
+        .info-detail label {
+            display: block;
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .info-detail p {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .orders-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            gap: 20px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .order-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .order-id-section {
+            flex: 1;
+        }
+
+        .order-id-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .order-id-section p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .status-badge.confirmed {
+            background: #4CAF50;
+        }
+
+        .status-badge.processing {
+            background: #FF9800;
+        }
+
+        .status-badge.ready {
+            background: #2196F3;
+        }
+
+        .status-badge.delivered {
+            background: #4CAF50;
+        }
+
+        .status-badge.pending {
+            background: #9C27B0;
+        }
+
+        .status-badge.cancelled {
+            background: #f44336;
+        }
+
+        .order-card-body {
+            padding: 20px;
+        }
+
+        .pharmacy-info {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .pharmacy-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .pharmacy-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .pharmacy-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+        }
+
+        .pharmacy-detail i {
+            color: #667eea;
+            width: 20px;
+        }
+
+        /* Status Flow */
+        .status-flow {
+            margin: 20px 0;
+        }
+
+        .status-flow h4 {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .flow-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: calc(100% - 10px);
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .flow-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            z-index: 1;
+            position: relative;
+            color: #999;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .flow-step.active .flow-dot {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .flow-step.completed .flow-dot {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .flow-step.completed::after {
+            background: #4CAF50;
+        }
+
+        .flow-label {
+            font-size: 0.7rem;
+            margin-top: 8px;
+            text-align: center;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .flow-time {
+            font-size: 0.65rem;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        /* Medicines List */
+        .medicines-section {
+            margin: 15px 0;
+        }
+
+        .medicines-header {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .medicines-mini-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .medicine-tag {
+            background: #f0f0ff;
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .medicines-full-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .medicines-full-table th {
+            background: #f0f0ff;
+            padding: 10px;
+            text-align: left;
+            color: #333;
+            font-weight: 700;
+            border-bottom: 2px solid #d1c4e9;
+        }
+
+        .medicines-full-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+        }
+
+        .order-card-footer {
+            background: #f8f9ff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-date {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn:hover {
+            background: #764ba2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 16px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #d0d0d0;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Modal for detailed view */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .orders-section {
+                grid-template-columns: 1fr;
+            }
+
+            .flow-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 5px;
+            }
+
+            .flow-dot {
+                width: 35px;
+                height: 35px;
+                font-size: 0.7rem;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .header-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .patient-info {
+                grid-template-columns: 1fr;
+            }
+
+            .pharmacy-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <div class="header">
+            <div class="header-top">
+                <div class="header-title">
+                    <i class="fas fa-boxes"></i>
+                    <h1>My Medicine Orders</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="patient-info">
+                <div class="info-item">
+                    <i class="fas fa-user"></i>
+                    <div class="info-detail">
+                        <label>Patient Name</label>
+                        <p>{{ patient.name }}</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <div class="info-detail">
+                        <label>Email</label>
+                        <p>{{ patient.email }}</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <div class="info-detail">
+                        <label>Phone</label>
+                        <p>{{ patient.phone }}</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <div class="info-detail">
+                        <label>Total Orders</label>
+                        <p>{{ orders|length }} Order(s)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if orders %}
+            <div class="orders-section">
+                {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <div class="order-id-section">
+                            <h3><i class="fas fa-hashtag"></i> {{ order.id }}</h3>
+                            <p>{{ order.order_date_formatted }}</p>
+                        </div>
+                        <span class="status-badge {{ order.status }}">{{ order.status }}</span>
+                    </div>
+
+                    <div class="order-card-body">
+                        <!-- Pharmacy Information -->
+                        <div class="pharmacy-info">
+                            <div class="pharmacy-name">{{ order.pharmacy_name }}</div>
+                            <div class="pharmacy-details">
+                                <div class="pharmacy-detail">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{{ order.city }}, {{ order.state }}</span>
+                                </div>
+                                <div class="pharmacy-detail">
+                                    <i class="fas fa-phone"></i>
+                                    <span>{{ order.phone }}</span>
+                                </div>
+                                <div class="pharmacy-detail">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>{{ order.email }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Flow -->
+                        <div class="status-flow">
+                            <h4>Order Status</h4>
+                            <div class="flow-container">
+                                <div class="flow-step {% if order.status in ['confirmed', 'processing', 'ready', 'delivered'] %}completed{% endif %}">
+                                    <div class="flow-dot"><i class="fas fa-check"></i></div>
+                                    <div class="flow-label">Ordered</div>
+                                    <div class="flow-time">{{ order.order_date_formatted }}</div>
+                                </div>
+
+                                <div class="flow-step {% if order.status == 'confirmed' %}active{% elif order.status in ['processing', 'ready', 'delivered'] %}completed{% endif %}">
+                                    <div class="flow-dot"><i class="fas fa-check"></i></div>
+                                    <div class="flow-label">Confirmed</div>
+                                    <div class="flow-time">{% if order.confirmed_date_formatted %}{{ order.confirmed_date_formatted }}{% else %}-{% endif %}</div>
+                                </div>
+
+                                <div class="flow-step {% if order.status == 'processing' %}active{% elif order.status in ['ready', 'delivered'] %}completed{% endif %}">
+                                    <div class="flow-dot"><i class="fas fa-hourglass-half"></i></div>
+                                    <div class="flow-label">Processing</div>
+                                </div>
+
+                                <div class="flow-step {% if order.status == 'ready' %}active{% elif order.status == 'delivered' %}completed{% endif %}">
+                                    <div class="flow-dot"><i class="fas fa-box"></i></div>
+                                    <div class="flow-label">Ready</div>
+                                </div>
+
+                                <div class="flow-step {% if order.status == 'delivered' %}completed{% endif %}">
+                                    <div class="flow-dot"><i class="fas fa-check"></i></div>
+                                    <div class="flow-label">Delivered</div>
+                                    <div class="flow-time">{% if order.delivered_date_formatted %}{{ order.delivered_date_formatted }}{% else %}-{% endif %}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Doctor & Diagnosis -->
+                        <div style="background: #f8f9ff; padding: 12px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea;">
+                            <div style="font-size: 0.85rem; color: #999; margin-bottom: 5px; text-transform: uppercase; font-weight: 700;">Doctor</div>
+                            <div style="color: #333; font-weight: 600; margin-bottom: 8px;">{{ order.doctor_name }} <span style="color: #667eea;">({{ order.doctor_specialization }})</span></div>
+                            <div style="font-size: 0.85rem; color: #999; margin-bottom: 5px; text-transform: uppercase; font-weight: 700;">Diagnosis</div>
+                            <div style="color: #666;">{{ order.diagnosis }}</div>
+                        </div>
+
+                        <!-- Medicines -->
+                        <div class="medicines-section">
+                            <div class="medicines-header"><i class="fas fa-pills"></i> Prescribed Medicines</div>
+                            <table class="medicines-full-table">
+                                <thead>
+                                    <tr>
+                                        <th>Medicine</th>
+                                        <th>Dosage</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for medicine in order.medicines %}
+                                    <tr>
+                                        <td><strong>{{ medicine.medicine_name }}</strong></td>
+                                        <td>{{ medicine.dosage }}</td>
+                                        <td>{{ medicine.duration }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="order-card-footer">
+                        <div class="order-date">
+                            <i class="fas fa-calendar"></i> 
+                            {% if order.delivered_date_formatted %}
+                                Delivered: {{ order.delivered_date_formatted }}
+                            {% elif order.status == 'pending' %}
+                                Awaiting confirmation...
+                            {% else %}
+                                In progress...
+                            {% endif %}
+                        </div>
+                        <div class="order-actions">
+                            <button class="view-btn" onclick="alert('Order #{{ order.id }} - Status: {{ order.status }}\\n\\nPharmacy: {{ order.pharmacy_name }}\\nPhone: {{ order.phone }}\n\\nThis page will auto-refresh to show updates.')">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>No Orders Yet</h3>
+                <p>You haven't placed any medicine orders yet.</p>
+                <p style="color: #bbb; font-size: 0.9rem;">When you order medicines from a pharmacy, your orders will appear here and you can track the status in real-time.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Auto-refresh every 10 seconds to get real-time updates
+        const autoRefreshInterval = 10000; // 10 seconds
+        
+        // Uncomment below to enable auto-refresh
+        // setInterval(function() {
+        //     location.reload();
+        // }, autoRefreshInterval);
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (modal && event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

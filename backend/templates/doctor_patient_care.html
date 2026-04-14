@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Care Plan - Dr. {{ doctor.name }}</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+            min-height: 100vh;
+            padding: 22px;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(30, 41, 59, 0.08);
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            text-decoration: none;
+            color: #334155;
+            font-size: 18px;
+        }
+
+        .title-group h1 {
+            font-size: 1.35rem;
+            margin-bottom: 4px;
+        }
+
+        .title-group p {
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 18px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(30, 41, 59, 0.08);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #1e293b;
+        }
+
+        .subtle {
+            font-size: 0.88rem;
+            color: #64748b;
+            margin-bottom: 14px;
+        }
+
+        .empty {
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 14px;
+            color: #64748b;
+            background: #f8fafc;
+            font-size: 0.92rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: #f8fafc;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .meal-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ecfeff;
+            color: #0f766e;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .diet-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #f8fafc;
+        }
+
+        .diet-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .diet-card h3 {
+            font-size: 0.98rem;
+            margin-bottom: 6px;
+            color: #1e293b;
+        }
+
+        .diet-meta {
+            color: #475569;
+            font-size: 0.84rem;
+            margin-bottom: 8px;
+        }
+
+        ul {
+            padding-left: 18px;
+        }
+
+        li {
+            margin-bottom: 5px;
+            color: #334155;
+            font-size: 0.9rem;
+        }
+
+        .mini-title {
+            margin-top: 8px;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+            color: #1e40af;
+            font-weight: 700;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a class="back-btn" href="{{ url_for('chat_with_patient', doctor_id=doctor.id, patient_id=patient.id) }}">&#8592;</a>
+            <div class="title-group">
+                <h1>Patient Care Plan</h1>
+                <p>{{ patient.name }} | Age {{ patient.age or 'N/A' }} | Dr. {{ doctor.name }}</p>
+            </div>
+            <div class="badge">Doctor View</div>
+        </div>
+
+        <div class="grid">
+            <section class="card">
+                <h2>Active Medicine Reminders</h2>
+                <p class="subtle">Reminders generated by the patient from prescriptions.</p>
+
+                {% if reminders %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Dose</th>
+                            <th>Time</th>
+                            <th>Meal</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reminder in reminders %}
+                        <tr>
+                            <td>{{ reminder.medicine_name }}</td>
+                            <td>{{ reminder.dosage or 'as advised' }}</td>
+                            <td><strong>{{ reminder.reminder_time }}</strong></td>
+                            <td><span class="meal-badge">{{ reminder.meal_timing or 'as advised' }}</span></td>
+                            <td>{{ reminder.reminder_note or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty">No active reminders for this patient yet.</div>
+                {% endif %}
+            </section>
+
+            <section class="card">
+                <h2>Diet Plans</h2>
+                <p class="subtle">Generated from diagnosis + medicines.</p>
+
+                {% if diet_plans %}
+                    {% for item in diet_plans %}
+                    <div class="diet-card">
+                        <h3>Prescription #{{ item.prescription_id }}</h3>
+                        <div class="diet-meta">Updated: {{ item.updated_at or 'N/A' }}</div>
+                        <p><strong>{{ item.plan.summary if item.plan else 'Diet plan' }}</strong></p>
+
+                        {% if item.plan and item.plan.timing_notes %}
+                        <div class="mini-title">Medicine Timing Notes</div>
+                        <ul>
+                            {% for note in item.plan.timing_notes %}
+                            <li>{{ note }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+
+                        {% if item.plan and item.plan.avoid %}
+                        <div class="mini-title">Foods To Avoid</div>
+                        <ul>
+                            {% for avoid_item in item.plan.avoid %}
+                            <li>{{ avoid_item }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty">No diet plans generated yet.</div>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+</body>
+</html>

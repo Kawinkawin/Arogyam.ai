@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with {{ specialist_name }} - Arogyam.ai</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <span class="logo-icon">🏥</span>
+                <span class="logo-text">Arogyam.ai</span>
+            </a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/specialists">Specialists</a>
+                <a href="#" class="active">Chat</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="specialist-info">
+                <div class="specialist-avatar">{{ specialist_icon }}</div>
+                <h2>{{ specialist_name }}</h2>
+                <p class="specialist-desc">{{ specialist_description }}</p>
+            </div>
+
+            <div class="upload-section">
+                <h3>📤 Upload Files</h3>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.dcm" multiple hidden>
+                    <label for="fileInput" class="upload-label">
+                        <span class="upload-icon">📁</span>
+                        <span>Click to upload</span>
+                        <span class="upload-hint">PDF, Images, DICOM</span>
+                    </label>
+                </div>
+                <div id="fileList" class="file-list"></div>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 Tips</h4>
+                <ul>
+                    <li>Describe your symptoms clearly</li>
+                    <li>Upload relevant medical reports</li>
+                    <li>Ask specific questions</li>
+                    <li>Mention duration of symptoms</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-header">
+                <div class="header-info">
+                    <span class="specialist-avatar-small">{{ specialist_icon }}</span>
+                    <div>
+                        <h3>{{ specialist_name }}</h3>
+                        <span class="status">🟢 Online</span>
+                    </div>
+                </div>
+                <button id="reportButton" class="report-button" type="button">
+                    <span class="report-icon">📄</span>
+                    <span>Report</span>
+                </button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-avatar">{{ specialist_icon }}</div>
+                    <div class="message-content">
+                        <p>Hello! I'm your AI {{ specialist_name }}. How can I assist you today?</p>
+                        <span class="message-time">Just now</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Type your message here..." 
+                        rows="1"
+                    ></textarea>
+                    <button id="sendButton" class="send-button">
+                        <span>Send</span>
+                        <span class="send-icon">📤</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer Banner -->
+    <div class="disclaimer-banner">
+        <p>⚠️ This is an AI assistant providing preliminary insights. Always consult with qualified healthcare professionals for medical decisions.</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script>
+        // Get specialist type from URL
+        const specialistType = "{{ specialist_type }}";
+        const specialistName = "{{ specialist_name }}";
+        const initialBotText = "Hello! I'm your AI {{ specialist_name }}. How can I assist you today?";
+        const chatHistory = [
+            {
+                type: 'bot',
+                text: initialBotText,
+                time: new Date().toISOString()
+            }
+        ];
+        
+        // File upload handling
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileList = document.getElementById('fileList');
+        const uploadedFiles = [];
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        async function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            
+            for (const file of files) {
+                if (file.size <= 16 * 1024 * 1024) { // 16MB limit
+                    try {
+                        // Upload file to server
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('specialist', specialistType);
+                        
+                        const response = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            const fileId = data.file_id || data.saved_name || data.filename;
+                            uploadedFiles.push({
+                                id: fileId,
+                                name: data.filename
+                            });
+                            addFileToList(data.filename, fileId);
+                        } else {
+                            alert(`Failed to upload ${file.name}: ${data.error}`);
+                        }
+                    } catch (error) {
+                        alert(`Error uploading ${file.name}: ${error.message}`);
+                    }
+                } else {
+                    alert(`${file.name} is too large. Maximum size is 16MB.`);
+                }
+            }
+            fileInput.value = '';
+        }
+
+        function addFileToList(fileName, fileId) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <span class="file-icon">📄</span>
+                <span class="file-name">${fileName}</span>
+                <button class="remove-file" data-file-id="${fileId}">✕</button>
+            `;
+            fileItem.querySelector('.remove-file').addEventListener('click', function() {
+                removeFile(fileId);
+            });
+            fileList.appendChild(fileItem);
+        }
+
+        function removeFile(fileId) {
+            const index = uploadedFiles.findIndex(file => file.id === fileId);
+            if (index > -1) {
+                uploadedFiles.splice(index, 1);
+                const fileItems = fileList.getElementsByClassName('file-item');
+                for (let item of fileItems) {
+                    const removeButton = item.querySelector('.remove-file');
+                    if (removeButton && removeButton.dataset.fileId === fileId) {
+                        item.remove();
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Chat functionality
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatMessages = document.getElementById('chatMessages');
+        const reportButton = document.getElementById('reportButton');
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Send message on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+        reportButton.addEventListener('click', generateReportPDF);
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Disable send button
+            sendButton.disabled = true;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                // Send to backend
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        specialist: specialistType,
+                        files: uploadedFiles.map(file => file.id)
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                removeTypingIndicator();
+
+                // Add bot response
+                if (data.success) {
+                    addMessage(data.response, 'bot', data.meta || null);
+                } else {
+                    addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage('Sorry, I encountered an error connecting to the server. Please try again.', 'bot');
+                console.error('Error:', error);
+            } finally {
+                // Re-enable send button
+                sendButton.disabled = false;
+            }
+        }
+
+        function addMessage(text, type, meta = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            
+            const time = new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
+            // Convert markdown-style bold to HTML
+            const formattedText = text
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+
+            const metaHtml = type === 'bot' ? buildMetaBadges(meta) : '';
+
+            if (type === 'bot') {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">{{ specialist_icon }}</div>
+                    <div class="message-content">
+                        <p>${formattedText}</p>
+                        ${metaHtml}
+                        <span class="message-time">${time}</span>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <p>${formattedText}</p>
+                        <span class="message-time">${time}</span>
+                    </div>
+                    <div class="message-avatar">👤</div>
+                `;
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            chatHistory.push({
+                type,
+                text: normalizeText(text),
+                time: new Date().toISOString(),
+                meta: meta || undefined
+            });
+        }
+
+        function buildMetaBadges(meta) {
+            if (!meta || typeof meta !== 'object') {
+                return '';
+            }
+
+            const urgencyMap = {
+                low: 'Low',
+                medium: 'Medium',
+                high: 'High'
+            };
+            const confidenceMap = {
+                low: 'Low',
+                medium: 'Medium',
+                high: 'High'
+            };
+
+            const urgency = String(meta.urgency || 'medium').toLowerCase();
+            const confidence = String(meta.confidence || 'medium').toLowerCase();
+
+            if (!urgencyMap[urgency] || !confidenceMap[confidence]) {
+                return '';
+            }
+
+            return `
+                <div class="message-meta">
+                    <span class="meta-badge urgency-${urgency}">Urgency: ${urgencyMap[urgency]}</span>
+                    <span class="meta-badge confidence-${confidence}">Confidence: ${confidenceMap[confidence]}</span>
+                </div>
+            `;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot-message typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">{{ specialist_icon }}</div>
+                <div class="message-content">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        function normalizeText(text) {
+            return (text || '')
+                .replace(/\*\*(.+?)\*\*/g, '$1')
+                .replace(/\r/g, '')
+                .trim();
+        }
+
+        function sanitizePdfText(text) {
+            return normalizeText(text)
+                .replace(/\u0000/g, '')
+                .replace(/[ ]{2,}/g, ' ')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+        }
+
+        function cleanReportPoint(text) {
+            const cleaned = sanitizePdfText(text)
+                .replace(/^\s*[-*•]+\s*/g, '')
+                .replace(/^\s*#{1,6}\s*/g, '')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .replace(/^[:\-\s]+|[:\-\s]+$/g, '');
+
+            if (!cleaned) {
+                return '';
+            }
+            if (/^[^\p{L}\p{N}]+$/u.test(cleaned)) {
+                return '';
+            }
+            return cleaned;
+        }
+
+        function askReportLanguage() {
+            const input = window.prompt('Choose report language: English or Tamil', 'English');
+            if (input === null) {
+                return null;
+            }
+
+            const normalized = input.trim().toLowerCase();
+            if (!normalized || ['english', 'eng', 'en'].includes(normalized)) {
+                return 'english';
+            }
+            if (['tamil', 'tam', 'ta', 'தமிழ்'].includes(normalized)) {
+                return 'tamil';
+            }
+
+            alert('Invalid language input. Defaulting to English.');
+            return 'english';
+        }
+
+        function askReportMode() {
+            const input = window.prompt(
+                'Choose report mode: patient-simple / patient-standard / doctor-detailed',
+                'patient-simple'
+            );
+            if (input === null) {
+                return null;
+            }
+
+            const normalized = input.trim().toLowerCase().replace(/\s+/g, '-');
+            if (!normalized || ['patient-simple', 'simple', 'patient'].includes(normalized)) {
+                return 'patient_simple';
+            }
+            if (['patient-standard', 'standard', 'patient-mode'].includes(normalized)) {
+                return 'patient_standard';
+            }
+            if (['doctor-detailed', 'doctor', 'detailed', 'clinical'].includes(normalized)) {
+                return 'doctor_detailed';
+            }
+
+            alert('Invalid mode input. Defaulting to patient-simple.');
+            return 'patient_simple';
+        }
+
+        function askClarityLevel(defaultValue = 'simple') {
+            const input = window.prompt(
+                'Choose clarity level: simple / standard / detailed',
+                defaultValue
+            );
+            if (input === null) {
+                return null;
+            }
+
+            const normalized = input.trim().toLowerCase();
+            if (!normalized || ['simple', 'easy', 'basic'].includes(normalized)) {
+                return 'simple';
+            }
+            if (['standard', 'normal', 'medium'].includes(normalized)) {
+                return 'standard';
+            }
+            if (['detailed', 'detail', 'deep'].includes(normalized)) {
+                return 'detailed';
+            }
+
+            alert('Invalid clarity input. Defaulting to simple.');
+            return 'simple';
+        }
+
+        function askReportPreferences() {
+            const language = askReportLanguage();
+            if (!language) {
+                return null;
+            }
+
+            const mode = askReportMode();
+            if (!mode) {
+                return null;
+            }
+
+            const clarityDefault = mode === 'doctor_detailed' ? 'detailed' : mode === 'patient_standard' ? 'standard' : 'simple';
+            const clarity = askClarityLevel(clarityDefault);
+            if (!clarity) {
+                return null;
+            }
+
+            return { language, mode, clarity };
+        }
+
+        function getReportModeLabel(mode, reportLanguage) {
+            const isTamil = reportLanguage === 'tamil';
+            const map = {
+                patient_simple: isTamil ? 'நோயாளர் - எளிமை' : 'Patient - Simple',
+                patient_standard: isTamil ? 'நோயாளர் - நிலையான' : 'Patient - Standard',
+                doctor_detailed: isTamil ? 'மருத்துவர் - விரிவான' : 'Doctor - Detailed'
+            };
+            return map[mode] || map.patient_simple;
+        }
+
+        function getClarityLabel(clarity, reportLanguage) {
+            const isTamil = reportLanguage === 'tamil';
+            const map = {
+                simple: isTamil ? 'எளிமை' : 'Simple',
+                standard: isTamil ? 'நிலையான' : 'Standard',
+                detailed: isTamil ? 'விரிவான' : 'Detailed'
+            };
+            return map[clarity] || map.simple;
+        }
+
+        function getLanguageTextMap(reportLanguage) {
+            if (reportLanguage === 'tamil') {
+                return {
+                    titleSuffix: 'ஆலோசனை அறிக்கை',
+                    overview: 'இந்த சுருக்கம் உங்கள் AI மருத்துவ உரையாடலை எளிதாக புரிந்து கொள்ள உதவுகிறது.',
+                    sectionPrefix: 'ஆலோசனை கட்டம்',
+                    questionLabel: 'கேள்வி',
+                    overviewLabel: 'சுருக்கம்',
+                    specialistLabel: 'நிபுணர்',
+                    generatedLabel: 'உருவாக்கப்பட்ட நேரம்',
+                    modeLabel: 'அறிக்கை முறை',
+                    clarityLabel: 'தெளிவு',
+                    safetyHeading: 'பாதுகாப்பு குறிப்பு',
+                    footer: 'இது புரிதலுக்கான சுருக்கம் மட்டுமே. இறுதி முடிவுகளுக்கு தகுதியான மருத்துவரை அணுகவும்.',
+                    noData: 'இன்னும் அறிக்கை உருவாக்க போதுமான structured பதில்கள் இல்லை.',
+                    missingQuestion: 'பயனர் கேள்வி பதிவாகவில்லை',
+                    preparing: 'தயாராகிறது...'
+                };
+            }
+
+            return {
+                titleSuffix: 'Consultation Report',
+                overview: 'This summary is generated from your AI consultation chat to help you review key points clearly.',
+                sectionPrefix: 'Consultation Step',
+                questionLabel: 'Question',
+                overviewLabel: 'Overview',
+                specialistLabel: 'Specialist',
+                generatedLabel: 'Generated',
+                modeLabel: 'Report Mode',
+                clarityLabel: 'Clarity',
+                safetyHeading: 'Safety Note',
+                footer: 'For patient understanding only. Clinical decisions require licensed professionals.',
+                noData: 'No AI structured response available yet. Ask at least one question first.',
+                missingQuestion: 'User question not captured',
+                preparing: 'Preparing...'
+            };
+        }
+
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            const chunkSize = 0x8000;
+            let binary = '';
+
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                const chunk = bytes.subarray(i, i + chunkSize);
+                binary += String.fromCharCode(...chunk);
+            }
+
+            return btoa(binary);
+        }
+
+        async function ensureTamilFont(doc) {
+            const fontName = 'NotoSansTamil';
+            const fontFile = 'NotoSansTamil-Regular.ttf';
+            const fontList = doc.getFontList ? doc.getFontList() : {};
+            if (fontList && fontList[fontName]) {
+                return true;
+            }
+
+            const fontUrl = 'https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSansTamil/NotoSansTamil-Regular.ttf';
+            const response = await fetch(fontUrl);
+            if (!response.ok) {
+                return false;
+            }
+
+            const fontBuffer = await response.arrayBuffer();
+            const fontBase64 = arrayBufferToBase64(fontBuffer);
+            doc.addFileToVFS(fontFile, fontBase64);
+            doc.addFont(fontFile, fontName, 'normal');
+            return true;
+        }
+
+        function buildResponsePairs() {
+            const pairs = [];
+            let latestUserMessage = '';
+
+            for (const item of chatHistory) {
+                if (item.type === 'user') {
+                    latestUserMessage = item.text;
+                    continue;
+                }
+
+                if (!item.text || item.text === initialBotText) {
+                    continue;
+                }
+
+                pairs.push({
+                    question: latestUserMessage || 'General consultation request',
+                    response: item.text,
+                    time: item.time
+                });
+            }
+
+            return pairs;
+        }
+
+        function buildLocalStructuredReport(responsePairs, reportLanguage) {
+            const t = getLanguageTextMap(reportLanguage);
+            const sections = responsePairs.slice(-8).map((pair, index) => {
+                const responseLines = normalizeText(pair.response)
+                    .split('\n')
+                    .map(line => cleanReportPoint(line))
+                    .filter(Boolean)
+                    .slice(0, 8);
+
+                const cleanedQuestion = cleanReportPoint(pair.question) || t.missingQuestion;
+
+                return {
+                    heading: `${t.sectionPrefix} ${index + 1}`,
+                    points: [
+                        `${t.questionLabel}: ${cleanedQuestion.slice(0, 240)}`,
+                        ...responseLines
+                    ]
+                };
+            });
+
+            return {
+                title: `${specialistName} ${t.titleSuffix}`,
+                overview: t.overview,
+                sections,
+                safety_note: t.footer
+            };
+        }
+
+        async function requestStructuredReportFromGroq(responsePairs, reportLanguage, reportMode, clarityLevel) {
+            try {
+                const response = await fetch('/api/report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        specialist: specialistType,
+                        language: reportLanguage,
+                        mode: reportMode,
+                        clarity: clarityLevel,
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.report && Array.isArray(data.report.sections) && data.report.sections.length) {
+                    return data.report;
+                }
+            } catch (error) {
+                console.error('Groq report request failed, using local fallback:', error);
+            }
+
+            return buildLocalStructuredReport(responsePairs, reportLanguage);
+        }
+
+        async function generateReportPDF() {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                alert('Report engine not loaded. Please refresh and try again.');
+                return;
+            }
+
+            const preferences = askReportPreferences();
+            if (!preferences) {
+                return;
+            }
+
+            const reportLanguage = preferences.language;
+            const reportMode = preferences.mode;
+            const clarityLevel = preferences.clarity;
+
+            const t = getLanguageTextMap(reportLanguage);
+
+            const responsePairs = buildResponsePairs();
+            if (!responsePairs.length) {
+                alert(t.noData);
+                return;
+            }
+
+            reportButton.disabled = true;
+            reportButton.innerHTML = `<span class="report-icon">⏳</span><span>${t.preparing}</span>`;
+
+            try {
+                const structuredReport = await requestStructuredReportFromGroq(
+                    responsePairs,
+                    reportLanguage,
+                    reportMode,
+                    clarityLevel
+                );
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+                const isTamilReport = reportLanguage === 'tamil';
+                let activeFont = 'helvetica';
+                if (isTamilReport) {
+                    const fontReady = await ensureTamilFont(doc);
+                    if (!fontReady) {
+                        alert('Tamil font could not be loaded. Please check internet and try again.');
+                        return;
+                    }
+                    activeFont = 'NotoSansTamil';
+                }
+
+                function setReportFont(style = 'normal', size = 11) {
+                    if (activeFont === 'NotoSansTamil') {
+                        doc.setFont(activeFont, 'normal');
+                    } else {
+                        doc.setFont(activeFont, style);
+                    }
+                    doc.setFontSize(size);
+                }
+
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 44;
+                const contentWidth = pageWidth - (margin * 2);
+                const reportTitle = sanitizePdfText(structuredReport.title || `${specialistName} Consultation Report`) || `${specialistName} Consultation Report`;
+                const reportOverview = sanitizePdfText(structuredReport.overview || 'Consultation summary generated from AI responses.');
+                const reportSections = Array.isArray(structuredReport.sections) ? structuredReport.sections : [];
+                const safetyNote = sanitizePdfText(structuredReport.safety_note || 'This summary does not replace professional medical advice.');
+                const reportPreferences = structuredReport.report_preferences || {};
+                const effectiveMode = String(reportPreferences.mode || reportMode || 'patient_simple').toLowerCase();
+                const effectiveClarity = String(reportPreferences.clarity || clarityLevel || 'simple').toLowerCase();
+                const modeLabel = getReportModeLabel(effectiveMode, reportLanguage);
+                const clarityLabel = getClarityLabel(effectiveClarity, reportLanguage);
+                let y = margin;
+
+                const now = new Date();
+                const generatedOn = now.toLocaleString(reportLanguage === 'tamil' ? 'ta-IN' : 'en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                function drawPageHeader(isFirstPage = false) {
+                    if (isFirstPage) {
+                        doc.setFillColor(37, 99, 235);
+                        doc.rect(0, 0, pageWidth, 132, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        setReportFont('bold', 22);
+                        doc.text(reportTitle.slice(0, 72), margin, 52);
+                        setReportFont('normal', 12);
+                        doc.text(`${t.specialistLabel}: ${specialistName}`, margin, 76);
+                        doc.text(`${t.generatedLabel}: ${generatedOn}`, margin, 94);
+                        doc.text(`${t.modeLabel}: ${modeLabel} | ${t.clarityLabel}: ${clarityLabel}`, margin, 112);
+                        y = 152;
+                        return;
+                    }
+
+                    doc.setDrawColor(226, 232, 240);
+                    doc.line(margin, 30, pageWidth - margin, 30);
+                    doc.setTextColor(30, 41, 59);
+                    setReportFont('bold', 11);
+                    doc.text(reportTitle.slice(0, 70), margin, 22);
+                    y = 50;
+                }
+
+                function drawFooter() {
+                    const pages = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= pages; i += 1) {
+                        doc.setPage(i);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.line(margin, pageHeight - 34, pageWidth - margin, pageHeight - 34);
+                        doc.setTextColor(100, 116, 139);
+                        setReportFont('normal', 9);
+                        doc.text(`Page ${i} of ${pages}`, pageWidth - margin, pageHeight - 18, { align: 'right' });
+                        doc.text(t.footer, margin, pageHeight - 18);
+                    }
+                }
+
+                function ensureSpace(requiredHeight) {
+                    if (y + requiredHeight <= pageHeight - 52) {
+                        return;
+                    }
+                    doc.addPage();
+                    drawPageHeader(false);
+                }
+
+                function writeWrappedLine(text, x, maxWidth, options = {}) {
+                    const { fontSize = 11, style = 'normal', color = [51, 65, 85], lineHeight = 16 } = options;
+                    const cleanText = sanitizePdfText(text);
+                    if (!cleanText) {
+                        return;
+                    }
+
+                    setReportFont(style, fontSize);
+                    doc.setTextColor(color[0], color[1], color[2]);
+
+                    const wrapped = doc.splitTextToSize(cleanText, maxWidth);
+                    for (const line of wrapped) {
+                        ensureSpace(lineHeight + 2);
+                        doc.text(line, x, y);
+                        y += lineHeight;
+                    }
+                }
+
+                function writeSection(heading, points) {
+                    ensureSpace(30);
+                    setReportFont('bold', 13);
+                    doc.setTextColor(30, 64, 175);
+                    doc.text(sanitizePdfText(heading).slice(0, 90), margin, y);
+                    y += 18;
+
+                    for (const point of points) {
+                        writeWrappedLine(`• ${point}`, margin + 10, contentWidth - 10, {
+                            fontSize: 11,
+                            style: 'normal',
+                            color: [51, 65, 85],
+                            lineHeight: 15
+                        });
+                    }
+                    y += 10;
+                }
+
+                drawPageHeader(true);
+
+                setReportFont('normal', 11);
+                const overviewLines = doc.splitTextToSize(reportOverview, contentWidth - 28);
+                const overviewHeight = Math.max(70, 34 + (overviewLines.length * 15));
+                doc.setFillColor(241, 245, 249);
+                doc.roundedRect(margin, y, contentWidth, overviewHeight, 10, 10, 'F');
+                setReportFont('bold', 12);
+                doc.setTextColor(30, 41, 59);
+                doc.text(t.overviewLabel, margin + 14, y + 21);
+                y += 40;
+                for (const line of overviewLines) {
+                    setReportFont('normal', 11);
+                    doc.setTextColor(51, 65, 85);
+                    doc.text(line, margin + 14, y);
+                    y += 15;
+                }
+                y = y + 15;
+
+                for (const section of reportSections) {
+                    const heading = sanitizePdfText(section.heading || 'Section');
+                    const pointsRaw = Array.isArray(section.points) ? section.points : [];
+                    const points = pointsRaw
+                        .map(item => cleanReportPoint(String(item || '')))
+                        .filter(Boolean)
+                        .slice(0, 10);
+
+                    if (!points.length) {
+                        continue;
+                    }
+
+                    writeSection(heading, points);
+                }
+
+                if (safetyNote) {
+                    writeSection(t.safetyHeading, [safetyNote]);
+                }
+
+                drawFooter();
+
+                const timestamp = now.toISOString().replace(/[:.]/g, '-');
+                const filename = `arogyam-report-${specialistType}-${reportLanguage}-${effectiveMode}-${timestamp}.pdf`;
+                doc.save(filename);
+            } catch (error) {
+                console.error('Error generating report PDF:', error);
+                alert('Unable to generate report PDF right now. Please try again.');
+            } finally {
+                reportButton.disabled = false;
+                reportButton.innerHTML = '<span class="report-icon">📄</span><span>Report</span>';
+            }
+        }
+    </script>
+</body>
+</html>

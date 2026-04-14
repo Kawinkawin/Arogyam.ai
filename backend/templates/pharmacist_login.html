@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacist Login - Arogyam.ai</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pharmacist_login.css') }}">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-heartbeat"></i>
+                <span>Arogyam.ai</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/" class="nav-link back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header">
+                <div class="header-icon">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                <h1>Pharmacist Login</h1>
+                <p>Welcome back! Access your pharmacy dashboard</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="login-form" method="POST" action="/pharmacist_login">
+                <div class="form-group">
+                    <label for="license_number" class="required">License Number</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" 
+                               id="license_number" 
+                               name="license_number" 
+                               placeholder="Enter your pharmacy license number"
+                               required
+                               autofocus>
+                    </div>
+                    <small class="help-text">e.g., PH-2024-001</small>
+                </div>
+
+                <!-- Error Message -->
+                {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ error }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login to Dashboard
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="divider">
+                <span>New to Arogyam.ai?</span>
+            </div>
+
+            <!-- Register Link -->
+            <a href="/pharmacist" class="btn btn-secondary btn-register">
+                <i class="fas fa-user-plus"></i>
+                Register Your Pharmacy
+            </a>
+
+            <!-- Additional Help -->
+            <div class="help-section">
+                <p class="help-title">Need Help?</p>
+                <p class="help-text">
+                    If you forgot your license number or need assistance, please contact our support team:
+                </p>
+                <div class="contact-info">
+                    <p>
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:support@arogyam.ai">support@arogyam.ai</a>
+                    </p>
+                    <p>
+                        <i class="fas fa-phone"></i>
+                        <span>+91-XXXX-XXXX-XX</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features-section">
+            <h2>Why Login to Your Dashboard?</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h3>Manage Profile</h3>
+                    <p>Update your pharmacy information and details</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3>Track Orders</h3>
+                    <p>View and manage customer orders in real-time</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>View Analytics</h3>
+                    <p>Monitor your pharmacy's performance and statistics</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Customer Insights</h3>
+                    <p>See your customer base and engagement metrics</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const licenseNumber = document.getElementById('license_number').value.trim();
+            
+            if (!licenseNumber) {
+                e.preventDefault();
+                alert('Please enter your license number');
+                return false;
+            }
+        });
+
+        // Auto-focus on license input
+        window.addEventListener('load', function() {
+            document.getElementById('license_number').focus();
+        });
+    </script>
+</body>
+</html>

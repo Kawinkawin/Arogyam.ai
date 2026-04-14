@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacist Dashboard - Arogyam.ai</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pharmacist_dashboard.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-heartbeat"></i>
+                <span>Arogyam.ai</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="/logout" class="nav-link logout-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Success Alert -->
+    {% if success_message %}
+    <div class="alert alert-success">
+        <div class="alert-content">
+            <i class="fas fa-check-circle"></i>
+            <div>
+                <strong>Welcome to Your Pharmacy Dashboard!</strong>
+                <p>{{ success_message }}</p>
+            </div>
+        </div>
+        <button class="alert-close" onclick="this.parentElement.style.display='none';">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="dashboard-container">
+        <!-- Sidebar Stats -->
+        <aside class="stats-sidebar">
+            <div class="stat-card">
+                <div class="stat-icon orders">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-info">
+                    <p class="stat-label">Total Orders</p>
+                    <p class="stat-value">{{ total_orders }}</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon customers">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <p class="stat-label">Total Customers</p>
+                    <p class="stat-value">{{ total_customers }}</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon status">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="stat-info">
+                    <p class="stat-label">Profile Status</p>
+                    <p class="stat-value status-approved">Approved</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Profile Section -->
+            <section class="profile-section">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h1>{{ pharmacist.pharmacy_name }}</h1>
+                        <p class="profile-meta">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ pharmacist.city }}, {{ pharmacist.state }} - {{ pharmacist.postal_code }}
+                        </p>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn btn-primary" onclick="openEditModal()">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Profile Details -->
+                <div class="profile-details">
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>License Number</label>
+                            <p>{{ pharmacist.license_number }}</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Email</label>
+                            <p>{{ pharmacist.email }}</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Phone</label>
+                            <p>{{ pharmacist.phone }}</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Website</label>
+                            <p>
+                                {% if pharmacist.website %}
+                                    <a href="{{ pharmacist.website }}" target="_blank" class="link">{{ pharmacist.website }}</a>
+                                {% else %}
+                                    <span class="text-muted">Not provided</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Opening Hours</label>
+                            <p>
+                                {% if pharmacist.opening_hours_from and pharmacist.opening_hours_to %}
+                                    {{ pharmacist.opening_hours_from }} - {{ pharmacist.opening_hours_to }}
+                                {% else %}
+                                    <span class="text-muted">Not set</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Full Address</label>
+                            <p>{{ pharmacist.address }}, {{ pharmacist.city }}, {{ pharmacist.state }} {{ pharmacist.postal_code }}, {{ pharmacist.country }}</p>
+                        </div>
+                    </div>
+
+                    <div class="description-box">
+                        <h3>About Your Pharmacy</h3>
+                        <p>{{ pharmacist.description }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Divider -->
+            <div class="section-divider"></div>
+
+            <!-- Customer Orders Section -->
+            <section class="orders-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-shopping-cart"></i> Customer Orders</h2>
+                    <span class="order-count">{{ total_orders }} orders</span>
+                </div>
+
+                {% if orders %}
+                    <div class="orders-list">
+                        {% for order in orders %}
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <div class="order-id">
+                                        <strong>Order #{{ order.id }}</strong>
+                                        <span class="order-date">{{ order.order_date }}</span>
+                                    </div>
+                                    <div class="order-status">
+                                        <span class="status-badge status-{{ order.status }}">{{ order.status | upper }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="order-details">
+                                    <!-- Patient Information -->
+                                    <div class="detail-section">
+                                        <h4><i class="fas fa-user"></i> Patient Information</h4>
+                                        <div class="info-grid">
+                                            <p><strong>Name:</strong> {{ order.patient_name }}</p>
+                                            <p><strong>Age:</strong> {{ order.patient_age }} years</p>
+                                            <p><strong>Email:</strong> {{ order.patient_email }}</p>
+                                            <p><strong>Phone:</strong> {{ order.patient_phone }}</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Doctor & Prescription Information -->
+                                    <div class="detail-section">
+                                        <h4><i class="fas fa-stethoscope"></i> Doctor & Prescription</h4>
+                                        <div class="info-grid">
+                                            <p><strong>Doctor:</strong> Dr. {{ order.doctor_name }}</p>
+                                            <p><strong>Specialization:</strong> {{ order.doctor_specialization }}</p>
+                                            <p><strong>Diagnosis:</strong> {{ order.diagnosis }}</p>
+                                            {% if order.notes %}
+                                            <p><strong>Notes:</strong> {{ order.notes }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Medicines List -->
+                                    <div class="detail-section">
+                                        <h4><i class="fas fa-pills"></i> Prescribed Medicines</h4>
+                                        <table class="medicines-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Medicine</th>
+                                                    <th>Dosage</th>
+                                                    <th>Duration</th>
+                                                    <th>Instructions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for medicine in order.medicines %}
+                                                <tr>
+                                                    <td><strong>{{ medicine.name }}</strong></td>
+                                                    <td>{{ medicine.dosage }}</td>
+                                                    <td>{{ medicine.duration }}</td>
+                                                    <td>{{ medicine.instructions or 'N/A' }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="order-actions">
+                                    <button class="btn btn-small btn-secondary" onclick="viewOrderPrescription({{ order.id }}, {{ order.prescription_id }}, '{{ order.patient_name }}', '{{ order.patient_age }}', '{{ order.patient_email }}', '{{ order.patient_phone }}', '{{ order.doctor_name }}', '{{ order.doctor_specialization }}', '{{ order.diagnosis }}', '{{ order.notes or '' }}', {{ order.medicines | tojson }})">
+                                        <i class="fas fa-eye"></i> View Prescription
+                                    </button>
+                                    <select class="status-select" onchange="updateOrderStatus({{ order.id }}, this.value)">
+                                        <option value="">Update Status</option>
+                                        <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                        <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Processing</option>
+                                        <option value="ready" {% if order.status == 'ready' %}selected{% endif %}>Ready for Pickup</option>
+                                        <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                        <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No Customer Orders Yet</h3>
+                        <p>When customers start ordering medicines from your pharmacy, you'll see their orders here.</p>
+                        <p class="text-muted">You'll see the complete prescription with all medicines and doctor information!</p>
+                    </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+
+    <!-- Prescription Detail Modal -->
+    <div id="prescriptionModal" class="modal">
+        <div class="modal-content prescription-modal">
+            <div class="modal-header prescription-header">
+                <div class="header-content">
+                    <h2><i class="fas fa-file-prescription"></i> Prescription Details</h2>
+                    <p id="prescriptionSubtitle" class="subtitle">Order #<span id="prescriptionOrderId"></span></p>
+                </div>
+                <button class="modal-close" onclick="closePrescriptionModal()">&times;</button>
+            </div>
+
+            <div class="modal-body prescription-content">
+                <!-- Patient Information -->
+                <div class="prescription-section">
+                    <h3><i class="fas fa-user-circle"></i> Patient Information</h3>
+                    <div class="info-row">
+                        <div class="info-col">
+                            <label>Name</label>
+                            <p id="prescriptionPatientName"></p>
+                        </div>
+                        <div class="info-col">
+                            <label>Age</label>
+                            <p id="prescriptionPatientAge"></p>
+                        </div>
+                        <div class="info-col">
+                            <label>Email</label>
+                            <p id="prescriptionPatientEmail"></p>
+                        </div>
+                        <div class="info-col">
+                            <label>Phone</label>
+                            <p id="prescriptionPatientPhone"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor Information -->
+                <div class="prescription-section">
+                    <h3><i class="fas fa-stethoscope"></i> Doctor Information</h3>
+                    <div class="info-row">
+                        <div class="info-col">
+                            <label>Doctor Name</label>
+                            <p id="prescriptionDoctorName"></p>
+                        </div>
+                        <div class="info-col">
+                            <label>Specialization</label>
+                            <p id="prescriptionDoctorSpecialization"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diagnosis & Notes -->
+                <div class="prescription-section">
+                    <h3><i class="fas fa-clipboard-list"></i> Clinical Information</h3>
+                    <div class="clinical-info">
+                        <div class="clinical-block">
+                            <label>Diagnosis</label>
+                            <div class="clinical-text" id="prescriptionDiagnosis"></div>
+                        </div>
+                        <div class="clinical-block" id="notesBlock" style="display: none;">
+                            <label>Additional Notes</label>
+                            <div class="clinical-text" id="prescriptionNotes"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medicines -->
+                <div class="prescription-section">
+                    <h3><i class="fas fa-pills"></i> Prescribed Medicines</h3>
+                    <table class="prescription-medicines-table">
+                        <thead>
+                            <tr>
+                                <th>Medicine Name</th>
+                                <th>Dosage</th>
+                                <th>Duration</th>
+                                <th>Instructions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prescriptionMedicinesBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer prescription-footer">
+                <button class="btn btn-secondary" onclick="printPrescriptionModal()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn btn-primary" onclick="closePrescriptionModal()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prescription Detail Modal -->
+    <div id="prescriptionModal" class="modal">
+        <div class="modal-content prescription-modal">
+            <div class="modal-header prescription-header">
+                <div class="header-content">
+                    <h2><i class="fas fa-file-prescription"></i> Prescription Details</h2>
+                    <p id="prescriptionSubtitle" class="subtitle">Order #<span id="prescriptionOrderId"></span></p>
+                </div>
+                <button class="modal-close" onclick="closePrescriptionModal()">&times;</button>
+            </div>
+
+            <div class="modal-body prescription-content">
+                <!-- Patient Information -->
+                <div class="prescription-section">
+                    <h3><i class="fas fa-user-circle"></i> Patient Information</h3>
+                    <div class="info-row">
+                        <div class="info-col">
+                            <label>Name</label>
+                            <p id="prescriptionPatientName"></p>
+                        </div>
+                        <div class="info-col">
+                            <label>Age</label>
+                            <p id="prescriptionPatientAge"></p>
+                        </div>
+                        <div class="info-col">
+                            <label>Email</label>
+                            <p id="prescriptionPatientEmail"></p>
+                        </div>
+                        <div class="info-col">
+                            <label>Phone</label>
+                            <p id="prescriptionPatientPhone"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor Information -->
+                <div class="prescription-section">
+                    <h3><i class="fas fa-stethoscope"></i> Doctor Information</h3>
+                    <div class="info-row">
+                        <div class="info-col">
+                            <label>Doctor Name</label>
+                            <p id="prescriptionDoctorName"></p>
+                        </div>
+                        <div class="info-col">
+                            <label>Specialization</label>
+                            <p id="prescriptionDoctorSpecialization"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diagnosis & Notes -->
+                <div class="prescription-section">
+                    <h3><i class="fas fa-clipboard-list"></i> Clinical Information</h3>
+                    <div class="clinical-info">
+                        <div class="clinical-block">
+                            <label>Diagnosis</label>
+                            <div class="clinical-text" id="prescriptionDiagnosis"></div>
+                        </div>
+                        <div class="clinical-block" id="notesBlock" style="display: none;">
+                            <label>Additional Notes</label>
+                            <div class="clinical-text" id="prescriptionNotes"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medicines -->
+                <div class="prescription-section">
+                    <h3><i class="fas fa-pills"></i> Prescribed Medicines</h3>
+                    <table class="prescription-medicines-table">
+                        <thead>
+                            <tr>
+                                <th>Medicine Name</th>
+                                <th>Dosage</th>
+                                <th>Duration</th>
+                                <th>Instructions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prescriptionMedicinesBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer prescription-footer">
+                <button class="btn btn-secondary" onclick="printPrescriptionModal()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn btn-primary" onclick="closePrescriptionModal()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Pharmacy Profile</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+
+            <form id="editForm" class="edit-form" method="POST" action="/update_pharmacist/{{ pharmacist.id }}">
+                <div class="form-group">
+                    <label for="edit_pharmacy_name" class="required">Pharmacy Name</label>
+                    <input type="text" id="edit_pharmacy_name" name="pharmacy_name" 
+                           value="{{ pharmacist.pharmacy_name }}" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_email" class="required">Email</label>
+                        <input type="email" id="edit_email" name="email" 
+                               value="{{ pharmacist.email }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_phone" class="required">Phone</label>
+                        <input type="tel" id="edit_phone" name="phone" 
+                               value="{{ pharmacist.phone }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_address" class="required">Address</label>
+                    <input type="text" id="edit_address" name="address" 
+                           value="{{ pharmacist.address }}" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_city" class="required">City</label>
+                        <input type="text" id="edit_city" name="city" 
+                               value="{{ pharmacist.city }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_state" class="required">State</label>
+                        <input type="text" id="edit_state" name="state" 
+                               value="{{ pharmacist.state }}" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_postal_code" class="required">Postal Code</label>
+                        <input type="text" id="edit_postal_code" name="postal_code" 
+                               value="{{ pharmacist.postal_code }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_website">Website</label>
+                        <input type="url" id="edit_website" name="website" 
+                               value="{{ pharmacist.website or '' }}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_opening_hours_from">Opening Time</label>
+                        <input type="time" id="edit_opening_hours_from" name="opening_hours_from" 
+                               value="{{ pharmacist.opening_hours_from or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_opening_hours_to">Closing Time</label>
+                        <input type="time" id="edit_opening_hours_to" name="opening_hours_to" 
+                               value="{{ pharmacist.opening_hours_to or '' }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_description" class="required">Description</label>
+                    <textarea id="edit_description" name="description" rows="4" required>{{ pharmacist.description }}</textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal() {
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Auto-hide success alert after 5 seconds
+        window.addEventListener('load', function() {
+            const alert = document.querySelector('.alert-success');
+            if (alert) {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    alert.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => alert.style.display = 'none', 300);
+                }, 5000);
+            }
+        });
+
+        // View prescription details
+        function viewOrderPrescription(orderId, prescriptionId, patientName, patientAge, patientEmail, patientPhone, doctorName, doctorSpecialization, diagnosis, notes, medicines) {
+            // Populate patient info
+            document.getElementById('prescriptionOrderId').textContent = orderId;
+            document.getElementById('prescriptionPatientName').textContent = patientName;
+            document.getElementById('prescriptionPatientAge').textContent = patientAge + ' years';
+            document.getElementById('prescriptionPatientEmail').textContent = patientEmail;
+            document.getElementById('prescriptionPatientPhone').textContent = patientPhone;
+
+            // Populate doctor info
+            document.getElementById('prescriptionDoctorName').textContent = doctorName;
+            document.getElementById('prescriptionDoctorSpecialization').textContent = doctorSpecialization;
+
+            // Populate diagnosis & notes
+            document.getElementById('prescriptionDiagnosis').textContent = diagnosis;
+            
+            if (notes && notes.trim()) {
+                document.getElementById('notesBlock').style.display = 'block';
+                document.getElementById('prescriptionNotes').textContent = notes;
+            } else {
+                document.getElementById('notesBlock').style.display = 'none';
+            }
+
+            // Populate medicines table
+            const medicinesBody = document.getElementById('prescriptionMedicinesBody');
+            medicinesBody.innerHTML = '';
+            
+            medicines.forEach(medicine => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${medicine.name}</strong></td>
+                    <td>${medicine.dosage}</td>
+                    <td>${medicine.duration}</td>
+                    <td>${medicine.instructions || 'N/A'}</td>
+                `;
+                medicinesBody.appendChild(row);
+            });
+
+            // Open modal
+            document.getElementById('prescriptionModal').style.display = 'flex';
+        }
+
+        function closePrescriptionModal() {
+            document.getElementById('prescriptionModal').style.display = 'none';
+        }
+
+        function printPrescriptionModal() {
+            const modalContent = document.querySelector('.prescription-modal').innerHTML;
+            const printWindow = window.open('', '', 'width=900,height=600');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Prescription</title>
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; }
+                        .prescription-modal { max-width: 900px; margin: 0 auto; }
+                        .modal-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 0; }
+                        .modal-body { padding: 30px; }
+                        .prescription-section { margin-bottom: 25px; }
+                        .prescription-section h3 { color: #333; margin-bottom: 15px; font-size: 1.1rem; }
+                        .info-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+                        .info-col label { color: #999; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px; display: block; }
+                        .info-col p { color: #333; font-weight: 500; }
+                        .clinical-text { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea; color: #555; }
+                        .prescription-medicines-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        .prescription-medicines-table thead { background: #f0f0ff; }
+                        .prescription-medicines-table th { padding: 12px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #d1c4e9; }
+                        .prescription-medicines-table td { padding: 12px; border-bottom: 1px solid #e0e0e0; }
+                        .modal-footer { text-align: center; padding-top: 20px; }
+                        @media print { .modal-footer { display: none; } }
+                    </style>
+                </head>
+                <body>
+                    ${modalContent}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const prescriptionModal = document.getElementById('prescriptionModal');
+            if (event.target === prescriptionModal) {
+                closePrescriptionModal();
+            }
+        });
+
+        // Update order status
+        function updateOrderStatus(orderId, newStatus) {
+            if (!newStatus) {
+                return;
+            }
+
+            if (confirm(`Update order #${orderId} status to ${newStatus}?`)) {
+                fetch('/api/update_order_status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        order_id: orderId,
+                        status: newStatus
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Order status updated successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error updating status: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating order status');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

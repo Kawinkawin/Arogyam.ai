@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/patient_main.css') }}">
+</head>
+<body>
+<header class="dashboard-header">
+    <h1>Choose Your Specialist</h1>
+    {% if patient_logged_in %}
+        <p class="welcome-line">Your medicine reminders and care plans are now available below.</p>
+    {% endif %}
+    <form method="GET" action="{{ url_for('patient_dashboard') }}">
+        <input type="text" name="search" placeholder="Search for a specialist..." value="{{ request.args.get('search', '') }}">
+        <button type="submit">Search</button>
+    </form>
+</header>
+
+{% if patient_logged_in %}
+<section class="notification-container">
+    <div class="section-head">
+        <h2>Login Notifications</h2>
+        <span class="hint">Shown every time you login</span>
+    </div>
+
+    {% if patient_notifications %}
+        <div class="notification-grid">
+            {% for item in patient_notifications %}
+            <div class="notification-card {{ item.status }}">
+                <div class="notification-title">{{ item.medicine_name }}</div>
+                <p><strong>Doctor:</strong> Dr. {{ item.doctor_name }}</p>
+                <p><strong>Time:</strong> {{ item.reminder_time }} ({{ item.meal_timing }})</p>
+                {% if item.reminder_note %}
+                <p class="notification-note">{{ item.reminder_note }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-care-box">No active reminders yet. Open any prescription and tap <strong>Get Reminder</strong>.</div>
+    {% endif %}
+</section>
+
+<section class="care-summary-container">
+    <div class="section-head">
+        <h2>My Prescription Care</h2>
+        <span class="hint">Reminders, diet plan, and medicine tracking</span>
+    </div>
+
+    {% if prescription_care %}
+        <div class="care-grid">
+            {% for item in prescription_care %}
+            <div class="care-card">
+                <div class="care-top">
+                    <h3>Dr. {{ item.doctor_name }}</h3>
+                    <span class="care-badge">{{ item.specialization }}</span>
+                </div>
+                <p class="care-diagnosis">{{ item.diagnosis_preview or 'No diagnosis summary' }}</p>
+                <div class="care-meta">
+                    <span>Prescription: #{{ item.id }}</span>
+                    <span>Date: {{ item.created_date or 'N/A' }}</span>
+                </div>
+                <div class="care-reminder-count">{{ item.reminder_count or 0 }} active reminders</div>
+                <a href="{{ url_for('view_prescriptions', doctor_id=item.doctor_id, patient_id=item.patient_id) }}" class="care-open-btn">Open Prescription Care</a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-care-box">No prescriptions found yet. Complete a consultation and ask your doctor to send a prescription.</div>
+    {% endif %}
+</section>
+{% endif %}
+
+<section class="specialist-container">
+    {% for s in specialists %}
+    <div class="specialist-card">
+        <div class="icon">
+            {% if s.specialization == "Neurologist" %} 🧠
+            {% elif s.specialization == "Cardiologist" %} ❤️
+            {% elif s.specialization == "Orthopedist" %} 🦴
+            {% elif s.specialization == "General Physician" %} 🩺
+            {% elif s.specialization == "Pulmonologist" %} 🌬️
+            {% elif s.specialization == "Dentist" %} 🦷
+            {% elif s.specialization == "Dermatologist" %} 💆‍♀️
+            {% else %} 🩺
+            {% endif %}
+        </div>
+        <h2>{{ s.specialization }}</h2>
+        <p>Doctors Available: <span class="count">{{ s.count }}</span></p>
+        <p class="fees">₹{{ "%.0f"|format(s.min_fee) }}</p>
+        <p>Days: {{ s.days }}</p>
+        <p>Time: {{ s.earliest_start }}pm - {{ s.latest_end }}pm</p>
+        <a href="{{ url_for('show_specialist', specialization=s.specialization|lower|replace(' ', '_')) }}">
+            <button type="button">View Doctors</button>
+        </a>
+
+    </div>
+    {% endfor %}
+</section>
+
+</body>
+</html>
