@@ -4,12 +4,12 @@
 
 Arogyam is designed to simplify how patients connect with medical professionals. The platform allows patients to:
 
-- Browse doctors by specialization
-- View availability, consultation fees, and schedules
-- Register and log in as a patient
-- Select a doctor and securely pay consultation fees via UPI
-- Initiate chat, voice, or video consultations
-- Provide feedback and rate doctors
+- Browse doctors by specialization.
+- View availability, consultation fees, and schedules.
+- Register and log in as a patient.
+- Select a doctor and securely pay consultation fees via UPI.
+- Initiate chat, voice, or video consultations.
+- Provide feedback and rate doctors.
 
 Doctors can:
 
