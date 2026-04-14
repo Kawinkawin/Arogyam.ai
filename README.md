@@ -78,14 +78,13 @@ Doctors can:
 
 | Layer       | Technology                    |
 |-------------|------------------------------|
-| Backend     | Python (Flask)               |
+| Backend     | Python  (Flask)              |
 | Frontend    | HTML5, CSS3 (custom styles)  |
 | Database    | MySQL                        |
 
 
 ---
 
----
 
 
 
